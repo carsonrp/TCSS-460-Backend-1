@@ -534,6 +534,101 @@ paths:
           description: WEATHER_API_KEY not configured (middleware)
         '502':
           description: Failed to reach weather service
+  /proxy/air:
+    get:
+      summary: Get air pollution data for a location
+      description: >
+        Pass-through proxy route that calls the OpenWeatherMap Air Pollution API
+        and forwards the raw response as-is.
+      parameters:
+        - in: query
+          name: lat
+          required: true
+          schema:
+            type: number
+          description: Latitude of the location
+        - in: query
+          name: lon
+          required: true
+          schema:
+            type: number
+          description: Longitude of the location
+      responses:
+        '200':
+          description: Raw air pollution data from OpenWeatherMap
+          content:
+            application/json:
+              example:
+                coord: { lon: -122.33, lat: 47.61 }
+                list:
+                  - main: { aqi: 2 }
+                    components:
+                      co: 201.94
+                      no: 0.0
+                      no2: 0.0
+                      o3: 68.89
+                      so2: 0.64
+                      pm2_5: 0.5
+                      pm10: 0.54
+                      nh3: 0.1
+                    dt: 1713388800
+        '400':
+          description: Missing or invalid query parameters
+          content:
+            application/json:
+              example:
+                error: "lat and lon are required query parameters"
+        '502':
+          description: Upstream API failure
+          content:
+            application/json:
+              example:
+                error: "Failed to reach air pollution service"
+  /proxy/forecast-summary:
+    get:
+      summary: Get a transformed 5-day weather forecast summary
+      description: >
+        Calls the OpenWeatherMap 5-day / 3-hour forecast endpoint and transforms
+        the verbose response into a daily summary including date, high temp,
+        low temp, and general condition.
+      parameters:
+        - in: query
+          name: city
+          required: true
+          schema:
+            type: string
+          description: City name to fetch forecast for
+      responses:
+        '200':
+          description: 5-day transformed forecast summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForecastSummaryResponse'
+              example:
+                city: "Seattle"
+                summary:
+                  - date: "2026-04-17"
+                    high: 12.61
+                    low: 12.61
+                    condition: "Clouds"
+                  - date: "2026-04-18"
+                    high: 19.62
+                    low: 6.43
+                    condition: "Clouds"
+        '400':
+          description: Missing or invalid city parameter
+          content:
+            application/json:
+              example:
+                error: "city query parameter is required"
+        '502':
+          description: Upstream API failure
+          content:
+            application/json:
+              example:
+                error: "Failed to reach forecast service"
+
 
 # ── Schemas ───────────────────────────────────────────────────
 
@@ -662,3 +757,31 @@ components:
           type: array
           items:
             type: string
+
+    DailySummary:
+      type: object
+      properties:
+        date:
+          type: string
+          example: "2026-04-18"
+        high:
+          type: number
+          example: 19.62
+        low:
+          type: number
+          example: 6.43
+        condition:
+          type: string
+          example: "Clouds"
+
+    ForecastSummaryResponse:
+      type: object
+      properties:
+        city:
+          type: string
+          example: "Seattle"
+        summary:
+          type: array
+          items:
+            $ref: '#/components/schemas/DailySummary'
+

@@ -205,6 +205,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateUserResponse'
+                
 
   /v1/input/headers:
     get:
@@ -330,6 +331,85 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HeadersResponse'
+
+# ── My Routes ──────────────────────────────────────────────
+
+  /v1/math/{num}:
+    get:
+      summary: Returns the double of a number
+      description: Takes a number as a path parameter and returns the number and its double.
+      parameters:
+        - name: num
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The number to double
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              example:
+                input: 7
+                double: 14
+
+  /v1/math/add:
+    get:
+      summary: Adds two numbers
+      description: Accepts two numbers as query parameters and returns their sum.
+      parameters:
+        - name: a
+          in: query
+          required: true
+          schema:
+            type: number
+          description: First number
+        - name: b
+          in: query
+          required: true
+          schema:
+            type: number
+          description: Second number
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              example:
+                a: 5
+                b: 9
+                sum: 14
+
+  /v1/math/multiply:
+    post:
+      summary: Multiplies two numbers
+      description: Accepts a JSON body with x and y and returns their product.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                x:
+                  type: number
+                y:
+                  type: number
+            example:
+              x: 3
+              y: 4
+      responses:
+        '201':
+          description: Created — multiplication result
+          content:
+            application/json:
+              example:
+                x: 3
+                y: 4
+                product: 12
+
+
 
   # ── Proxy Routes ──────────────────────────────────────────────
 
